@@ -1,37 +1,15 @@
 # Z语言炼成记
 
-#### 介绍
-Z语言设计与开发的记录
+## 介绍
 
-#### 软件架构
-软件架构说明
+《Z语言炼成记》用来记录我在设计和开发Z语言过程中产生的思考和经历，希望能够让大家更有临场感地去了解Z语言。
 
+我打算采用日志的形式来记录，但并不保证每天都有更新，毕竟编译器这种非常繁杂的工作，不可能每天都有值得分享的产出。
 
-#### 安装教程
+但话题的形式确定为“一天以内能解决的问题”，如果不能，就分成好几篇来解决。
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## 目录
 
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+- [Z语言是什么](./Z语言是什么.md)。
 
 
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
