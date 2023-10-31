@@ -28,6 +28,21 @@ Z语言的特色用一句话说就是：“兼收并蓄，动静皆宜”。
 
 总的来说，“学好数理化，走遍天下都不怕”，而Javascript、C和Python就是Z语言的“数理化”。
 
+那这种兼收并蓄怎么实现呢？我的办法是设计一套通用的AST语法树，就叫zast。
+Z语言解析成zast之后，既可以直接动态执行（利用`zi`解释器），也可以翻译成C、JavaScript和Python（利用`zc`编译器）。
+另外，出于学习和探索的目的，我还会做一个传统的编译器，即把zast直接编译成x86-64汇编。
+
+这样一来，Z语言需要实现如下几个东西：
+
+- Z前端，将Z语言源码解析成zast。
+- zi解释器（Z Interpreter），动态执行zast。
+- zc编译器（Z Compiler），将zast编译成x86-64汇编。
+- zt转译器（Z Transpiler），将zast转译成其他语言的AST。
+    - zc->C转译器，将zast转译成C。
+    - zc->JS转译器，将zast转译成JavaScript。
+    - zc->PY转译器，将zast转译成Python。
+
+当然，为了方便起见，我把所有的功能都统一到一个命令`z`里了。
 
 ### 动静皆宜
 
