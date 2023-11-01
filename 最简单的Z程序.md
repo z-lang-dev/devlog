@@ -127,3 +127,122 @@ git config --global push.followTags true
 ```
 
 或者在vscode里，修改settings，将"Git: Follow Tags When Sync"打钩。
+
+## 编译器的输出内容
+
+`Hello World`这样简单的程序，应该输出什么呢？
+
+换句话说，Z编译器的输出应当是什么呢？
+
+Z编译器既支持解释执行，也支持静态编译，因此我们有两个流程：
+
+1. 解释执行：直接运行`z "print(\"Hello, world!\")"`，输出`Hello, world!`。或者直接运行`z`，在类似Python的交互环境中输入代码，获得解释执行的结果（这种模式也叫REPL）。
+2. 编译执行：把Z源码写入`hello.z`文件，再执行`z build hello.z`得到可执行文件`hello.exe`，运行这个文件得到输出。
+
+本节我们就先把这两个流程的框架搭建起来，而具体怎么解释和编译的过程先忽略掉。
+
+## 基本编译命令
+
+第一步，添加几个命令：
+
+- `repl`：进入REPL环境
+- `interp`：解释执行源码
+- `build`：编译文件
+- `run`：编译并运行文件，相当于先`build`，再运行生成的可执行文件
+
+我们先把这几个命令的架子搭好，实现的细节先不管，直接输出“TODO”即可：
+
+```c
+static void repl(void) {
+    printf("TODO: repl\n");
+}
+
+static void interp(char *code) {
+    printf("TODO: interp %s\n", code);
+}
+
+static void build(char *file) {
+    printf("TODO: building %s\n", file);
+}
+
+static void run(char *file) {
+    printf("TODO: run %s\n", file);
+}
+```
+
+可以看出，`repl`命令和其他三个不同，不需要参数；而`interp`的参数是一段代码；`build`和`run`的参数都是一个文件名。
+
+接着在`main`函数里处理并调用对应的命令函数：
+
+```c
+// 第一个参数是命令名称：interp|repl|build|run
+char *cmd = argv[1];
+
+// 如果命令是repl，直接进入repl()交互环境
+if (strcmp(cmd, "repl") == 0) {
+    repl();
+    return 0;
+}
+
+// 剩下的命令都需要提供内容（代码或文件名称）
+if (argc < 3) {
+    help();
+    return 1;
+}
+
+// 根据命令执行不同的操作
+if (strcmp(cmd, "interp") == 0) {
+    interp(argv[2]);
+} else if (strcmp(cmd, "build") == 0) {
+    build(argv[2]);
+} else if (strcmp(cmd, "run") == 0) {
+    run(argv[2]);
+} else {
+    help();
+}
+```
+
+编译并运行：
+
+```bash
+$ xmake build
+$ xmake run z repl
+Hello from Z!
+TODO: repl
+```
+
+这里`xmake run z`可以直接运行`z.exe`可执行文件，相当于执行`build\windows\x64\release\z.exe`。
+其他几个命令也如此。
+
+现在我们可以提交代码并打上第二个标签了：
+
+```bash
+git commit -a -m "step2: add basic commands"
+git tag v0.0.2 -m "step2: add basic commands"
+git push
+```
+
+接下来我们一个个实现。先从最简单的`interp`开始。
+
+## 实现`interp`
+
+`interp`的作用是将`code`参数作为一行代码，解析成AST语法树（我们叫它zast），再执行它，得到结果。
+
+例如，如果执行：`z interp "1+1"`，结果应当是`2`。
+
+我们本章用最简单的办法实现`z interp "print(\"Hello, world!\")"`，输出`Hello, world!`。
+
+我们先来定义AST的结构。这里的`print("Hello, world!")`是一个函数调用的表达式，我们取名为`CallExpr`，在最简单的情况下，它的结构如下：
+
+```c
+// zast.h
+struct CallExpr {
+    char *fn; // 函数名称
+    char *arg; // 参数
+};
+```
+
+`fn`就是函数名，在上述例子中就是`print`；而现在Z语言只需要支持一个参数，因此用一个字符串类型的`arg`字段来表示就可以了，上述例子中`arg`的值应当解析为`"Hello, world!"`。
+除了这两个字段，表达式里还有几个东西：括号`()`、引号`""`，但这些都是为了方便阅读和避免歧义而设置的分隔符，在解析完成之后，就不需要在AST中存放了。
+
+我们接下来的工作就是把`"print(\"Hello, world!\")"`解析成`CallExpr`结构，再想办法执行它。
