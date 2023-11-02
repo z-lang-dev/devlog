@@ -156,4 +156,4 @@ JS生态:
 1. webgpu
 1. vscode
 
-最终产品：zavre（Z AI Virtual Reality Engine，可以读作zaver，/ˈzeɪvə/）, 一款AI虚境引擎。
+最终产品：zaivre（Z AI Virtual Reality Engine，可以读作zavor，/ˈzeɪvə/）, 一款AI虚境引擎。
