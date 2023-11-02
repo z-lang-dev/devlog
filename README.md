@@ -2,7 +2,7 @@
 
 ## 介绍
 
-Z语言是一门面向个人的，用于学习和探索的编程语言。
+Z语言是一门面向个人的、专注于学习和探索的编程语言。
 
 Z语言着力于编译器相关知识的学习和分享，注重内容的广度，深度上则是由浅及深。
 
@@ -156,4 +156,4 @@ JS生态:
 1. webgpu
 1. vscode
 
-最终产品：zaivre（Z AI Virtual Reality Engine，可以读作zavor，/ˈzeɪvə/）, 一款AI虚境引擎。
+最终产品：Zaivre（Z AI Virtual Reality Engine，可以读作zavor，/ˈzeɪvə/）, 一款AI虚境引擎。
