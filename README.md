@@ -103,7 +103,7 @@
 
 #### 第九章：生态
 
-接入C生态:
+C生态:
 
 1. HTTP服务
 1. redis/数据库访问
@@ -112,7 +112,7 @@
 1. 游戏引擎
 1. 多媒体库
 
-接入Python生态:
+Python生态:
 
 1. numpy
 1. plot
@@ -121,11 +121,11 @@
 1. pytorch
 1. Stable Diffusion
 
-接入JS生态:
+JS生态:
 
 1. 前端GUI（vuejs）
 1. wasm
 1. webgpu
 1. vscode
 
-最终生态：AI虚境引擎。
+最终产品：AI虚境引擎。
