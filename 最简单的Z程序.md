@@ -246,3 +246,113 @@ struct CallExpr {
 除了这两个字段，表达式里还有几个东西：括号`()`、引号`""`，但这些都是为了方便阅读和避免歧义而设置的分隔符，在解析完成之后，就不需要在AST中存放了。
 
 我们接下来的工作就是把`"print(\"Hello, world!\")"`解析成`CallExpr`结构，再想办法执行它。
+
+考虑到现在Z语言只支持一个函数`print`，且参数只有一个字符串，我们可以用最笨的办法来简单地解析它：
+
+- 从代码开头到左括号`'('`之前的内容就是函数名`print`；
+- 两个引号`'"'`之间的内容就是参数字符串`Hello, world!`。
+
+因此我们只需要找到`'('`的位置`index_lparen`即可，这样，函数名称就是`0~index_lparen`的子串，
+而参数字符串就是`(index_lparen+2)`到`strlen(code)-2`的子串。
+注意这里之所以是`+2`和`-2`，是因为我们还要剔除掉引号`"`。
+
+```c
+// 解析表达式
+static CallExpr *parse_expr(char *code) {
+    printf("Parsing %s...\n", code);
+    // 解析源码
+    CallExpr *expr = calloc(1, sizeof(CallExpr));
+    // 从代码开头到'('之间的就是函数名称
+    int index_lparen = index_of(code, '(');
+    char *fn = substr(code, 0, index_lparen);
+    expr->fn = fn;
+    // 从'"'到'"'之间的就是参数
+    char *arg = substr(code, index_lparen + 2, strlen(code)-2);
+    expr->arg = arg;
+    // 打印出AST
+    print_ast(expr);
+    return expr;
+}
+```
+
+这里用到的`index_of`和`substr`都是很简单的字符串操作，直接参考源码即可。
+
+有了这个解析函数，`interp()`的内容就很简单了：
+
+```c
+// 解释并执行代码
+static void interp(char *code) {
+    printf("Interpreting %s...\n", code);
+    // 解析源码
+    CallExpr *call = parse_expr(code);
+    execute(call);
+}
+```
+
+执行函数`execute()`现在也很简单，直接调用C标准库的`printf`即可：
+
+```c
+// 执行AST
+static void execute(CallExpr *call) {
+    printf("Executing %s(%s)...\n", call->fn, call->arg);
+    // 打印call.arg
+    printf("%s\n", call->arg);
+}
+```
+
+我们试试效果：
+
+```bash
+$ xmake run z interp "print(\"Hello world!\")"
+Hello from Z!
+Interpreting print("Hello world!")...
+Parsing print("Hello world!")...
+CallExpr {
+  fn: print
+  arg: "Hello world!"
+}
+Executing print(Hello world!)...
+Hello world!
+```
+
+看最后一行输出，`Hello world!`已经打印出来了！
+
+换个信息打印：
+
+```bash
+$ xmake run z interp "print(\"Byebye from Z!\")"
+Hello from Z!
+Interpreting print("Byebye from Z!")...
+Parsing print("Byebye from Z!")...
+CallExpr {
+  fn: print
+  arg: "Byebye from Z!"
+}
+Executing print(Byebye from Z!)...
+Byebye from Z!
+```
+
+这样，最简单的`interp`就实现好了。
+
+我们提交代码并打上第3个标签：
+
+```bash
+git commit -a -m "step3: implement simple interpreter"
+git tag v0.0.3 -m "step3: implement simple interpreter"
+git push
+```
+
+这个实现有不少问题：
+
+- 现在Z语言只支持一句话，而且只能是一个`print("msg")`的调用。
+- 我们虽然解析了`print`函数名，但实际上并没有用到它，随便换个名字，例如`no_print`，程序还是会打印出输入的信息。这显然是不对的，我们需要检查函数名是否是语言所支持的，并输出错误信息。
+- 如果源码是`print(1)`，打印一个整数，得不到正确的结果，这是因为解析函数认定了`""`。
+
+而循序渐进地改进这些问题，就能逐步做出一个完整的解释起来。
+
+
+## 小结
+
+本节我们做出了最简单的Z解释器，并能够执行Hello World程序。
+
+下一节我们仍然只处理Hello World，但不同的是要实现一个最简单的编译器，可以执行`build`和`run`命令。
