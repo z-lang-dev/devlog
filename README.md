@@ -53,6 +53,8 @@ Z语言v0.1版：
 
 ## 中长期规划 
 
+### 第一册：基础
+
 #### 第一章：基本框架
 
 1. Hello world
@@ -103,6 +105,7 @@ Z语言v0.1版：
 1. 继承？
 1. 运行时多态
 
+### 第二册：生态
 
 #### 第六章：标准库
 
@@ -133,7 +136,25 @@ Z语言v0.1版：
 1. 代码生成
 1. DSL
 
-#### 第九章：生态
+#### 第九章：工具链
+
+1. 测试框架
+1. 性能工具
+1. zb: Z Builder
+1. 包管理，repo
+1. LSP/IDE插件
+1. 社区工具
+
+#### 第十章：优化
+
+1. AST优化
+1. IR
+1. SSA
+1. Passes
+1. JIT
+
+
+#### 第十一章：生态
 
 C生态:
 
@@ -160,4 +181,20 @@ JS生态:
 1. webgpu
 1. vscode
 
-最终产品：Zaivre（Z AI Virtual Reality Engine，可以读作zavor，/ˈzeɪvə/）, 一款AI虚境引擎。
+### 第三册：应用
+
+如果能做到这个地步，Z语言应当已经比较成熟，且打通了C/Python/JS的生态，拥有了完整的应用库了。
+
+这时候就可以开始实现我最初的梦想了：用Z语言开发自己的应用。
+
+我大致有如下几个方向的设想：
+
+1. Zap（Z App Platform），前后端开发无缝链接的UI框架。需要打通C/JS生态。
+1. Zire（Z Interactive REPL Environment），融合bash、python、js的交互环境，提供一站式探索式编程的交互环境。需要打通C/Python生态。
+1. Zeco (Z Editor for Coders)，类似于VSCode的通用编辑器，也是Z语言的官方IDE。主要基于C生态；但还需要实现一个WEB版，因此也需要JS。
+1. Ziff (Z Image Diffuser)，基于Stable Diffusion的图像处理工具。主要基于Python生态，再加上基于JS的界面。
+1. Zaivre（Z AI Virtual Reality Engine，可以读作zavor，/ˈzeɪvə/）, AI虚境引擎。需要C/Python/JS，这也是我为什么最初就选了这三个生态的根本原因。
+
+Zaivre虚境引擎是我的最终目标，也是我学习并开发Z语言的初衷。
+
+这些项目没一个好对付的，所以现在只是一个构思，一个方向，具体怎么做到时候再说，至少要等第二册写好了，Z的基本库都能用了再仔细探讨吧。
