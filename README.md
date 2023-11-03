@@ -27,6 +27,7 @@ Z语言的实现放在[gitee.com/z-lang/zc](https://gitee.com/z-lang/zc)工程�
 
 - [最简单的Z程序](./最简单的Z程序.md)。
 - [最简单的编译器](./最简单的编译器.md)。
+- [最简单的编译器Windows版](./最简单的编译器Windows版.md)。
 
 ## 短期规划
 
