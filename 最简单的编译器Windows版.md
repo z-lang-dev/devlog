@@ -181,14 +181,186 @@ world.obj
 > world
 ```
 
-这时会看到一个弹窗，内容是`Hello World`。
+这时会看到一个弹窗，内容是`Hello World`，如图所示：
+
+![hello win32](pics/hello_win32.png)
+
+当然，Z语言暂时并不会涉及到基于win32的GUI编程，所以这个例子只是为了展示一下Windows下汇编和Linux下汇编的异同。
+
+接下来我们仍然回到命令行程序的实现。
 
 ## 从Z语言到masm64汇编
 
-下面我们把Z语言编译成命令行下的汇编。
 有了上一章中的`codegen`，这一步就很容易了，依葫芦画瓢即可。
 
 我们需要把上一章实现的`codegen`改名为`codegen_linux`，而本章的汇编函数就叫`codegen_win`。
 
 
+```c
 
+// 将AST编译成汇编代码：windows/masm64
+static void codegen_win(CallExpr *expr) {
+    // 打开输出文件
+    FILE *fp = fopen("app.asm", "w");
+    // 导入标准库
+    fprintf(fp, "includelib msvcrt.lib\n");
+    fprintf(fp, "includelib legacy_stdio_definitions.lib\n");
+    // 要打印的信息参数
+    fprintf(fp, ".data\n");
+    fprintf(fp, "    msg db '%s', 10, 0\n", expr->arg);
+    fprintf(fp, ".code\n");
+    // 声明printf函数
+    fprintf(fp, "    externdef printf:proc\n");
+
+    // main函数
+
+    fprintf(fp, "main proc\n");
+    // prolog
+    fprintf(fp, "    push rbp\n");
+    fprintf(fp, "    mov rbp, rsp\n");
+    // reserve stack for shadow space
+    fprintf(fp, "    sub rsp, 20h\n");
+
+    // 准备printf参数
+    fprintf(fp, "    lea rcx, msg\n");
+    fprintf(fp, "    call printf\n");
+
+    // restore stack
+    fprintf(fp, "    add rsp, 20h\n");
+    // epilog
+    fprintf(fp, "    pop rbp\n");
+    // 返回
+    fprintf(fp, "    mov rcx, 0\n");
+    fprintf(fp, "    ret\n");
+
+    // 结束
+    fprintf(fp, "main endp\n");
+    fprintf(fp, "end\n");
+
+    // 保存并关闭文件
+    fclose(fp);
+}
+```
+
+这里和`codegen_linux`类似，也是一行行输出hello.asm的示例代码，只是在需要填入`msg`内容的地方填入编译器从`hello.z`里获得的字符串。
+
+现在`build`函数需要根据操作系统来判断是调用`codegen_linux`还是`codegen_win`：
+
+```c
+static void build(char *file) {
+    printf("Building %s\n", file);
+    // 读取源码文件内容
+    char *code = read_src(file);
+    // 解析出AST
+    CallExpr *expr = parse_expr(code);
+    // 输出汇编代码
+#ifdef _WIN32
+    codegen_win(expr);
+#else
+    codegen_linux(expr);
+#endif
+}
+```
+
+这样就OK了。
+
+编译`zc`项目：
+
+```bash
+$ xmake build
+[ 25%]: compiling.release src\main.c
+[ 50%]: linking.release z.exe
+[100%]: build ok, spent 0.562s
+```
+
+运行`z build`：
+
+```bash
+$ xmake run -w work z build hello.z
+Hello from Z!
+Building hello.z
+Parsing print("Hello, world!")...
+CallExpr {
+  fn: print
+  arg: "Hello, world!"
+}
+```
+
+这时候会看到`work`目录里已经生成了一个`app.asm`汇编文件，内容也和我们手写的`hello.asm`一样。
+
+调用`ml64`进行编译：
+
+```bash
+$ cd work
+$ ml64 app.asm
+Microsoft (R) Macro Assembler (x64) Version 14.37.32825.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+ Assembling: app.asm
+Microsoft (R) Incremental Linker Version 14.37.32825.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/OUT:app.exe
+app.obj
+``````
+
+得到了`app.exe`，运行它：
+
+```bash
+$ app
+Hello, world!
+```
+
+成功了！
+
+如果切回到`WSL`的`Ubuntu`，再执行类似的编译和运行，也能得到同样的结果。
+
+不过考虑到Linux底下要调用`clang`，Windows要调用`ml64`，而`ml64`必须在微软提供的`Development Console`里进行，
+所以我就把这个流程独立出来了。现在再Linux下，`z build hello.z`也只会生成`app.s`，后面需要读者自己调用`clang`来编译他：
+
+```bash
+$ cd work
+$ clang -o app.exe app.s
+$ ./app.exe
+Hello, world!
+```
+
+## 小结
+
+现在我们已经拥有了一个最简单的，但是跨平台的编译器了！这也算是一个小成就了。
+
+再看一看`build`函数：
+
+```c
+static void build(char *file) {
+    printf("Building %s\n", file);
+    // 读取源码文件内容
+    char *code = read_src(file);
+    // 解析出AST
+    CallExpr *expr = parse_expr(code);
+    // 输出汇编代码
+#ifdef _WIN32
+    codegen_win(expr);
+#else
+    codegen_linux(expr);
+#endif
+}
+```
+
+多么简洁，多么美妙！
+
+现在我们又可以提交一个新的标签了：
+
+```bash
+$ git commit -a -m "步骤5：Windows下的最简编译器"
+$ git tag v0.0.5 -m "步骤5：Windows下的最简编译器"
+$ git push
+```
+
+至此，解释器和编译器都做好了。
+
+接下来的工作是转译器：z2c、z2py、z2js。
+
+虽然有三份工作，不过考虑到我们只需要实现最简单的`print`函数，而且这仨都是高级语言，理论上比生成汇编要更容易，所以不用担心。
+
+做完这三个转译器之后，我们再把前面所有的工作整合到一起，做出一个可以互动的REPL来。
