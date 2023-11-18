@@ -357,7 +357,47 @@ struct CallExpr {
 最重要的修改是`parser.c`中解析函数调用的地方，即`call()`函数：
 
 ```c
+static Node *call(Parser *parser) {
+  Node *fn = fname(parser);
+  expect(parser, TK_LPAREN);
+  ArgBuf *buf = args(parser);
+  expect(parser, TK_RPAREN); 
+  Node *node = malloc(sizeof(NodeKind) + sizeof(CallExpr) + buf->count * sizeof(Node *));
+  node->kind = ND_CALL;
+  node->as.call.fname = fn;
+  node->as.call.argc = buf->count;
+  for (int i = 0; i < buf->count; i++) {
+    node->as.call.args[i] = buf->data[i];
+  }
+  trace_node(node);
+  return node;
+}
 ```
+
+`call`的结构现在如下：
+
+1. 调用`fname`解析函数名
+2. 跳过`(`
+3. 调用`args`解析参数列表，注意参数的个数并不是固定的，这里我们先假设不能超过4个。
+4. 跳过`)`
+5. 组装`Node`，其中最麻烦的部分在于`args`的组装。
+
+由于`args`的参数在解析参数列表完成之前是不知道的，但我们的`CallExpr`的`args`字段采用的是`FAM`形式，必须在初始化时指定长度。
+所以我在这里使用了一个`ArgBuf`结构体来临时存储参数，等解析完成后再把它们复制到`CallExpr`中。`ArgBuf`有最大长度，但好处是不用每次遇到函数调用都重新分配内存了，起到一个缓存的作用。
+
+注意，这里的`ArgBuf`暂时不支持嵌套调用，即类似于
+`pow(2, pow(2, 3))`这样的调用。等Z语言添加视野特性，支持嵌套调用时，我们需要更复杂的数据结构来支持。
+
+现在语法分析器可以处理多个参数的函数调用了，但是后端还没有真正支持它。
+
+对于所有用到`arg`的地方，都要从处理单个`arg`修改成遍历`args`数组，并处理其中每一个参数的逻辑。
+
+#### 解释器处理多参数
+
+#### 编译器处理多参数
+
+#### 转译器处理多参数
+
 
 ## 代码生成
 
